@@ -1,13 +1,36 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
+
+const STORAGE_KEY = 'todolist-demo:todos'
+
+const seedTodos = [
+  { id: 1, text: 'Read a book', done: false },
+  { id: 2, text: 'Go for a walk', done: true },
+  { id: 3, text: 'Write some code', done: false },
+]
+
+function loadTodos() {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY)
+    if (raw === null) return seedTodos
+    const parsed = JSON.parse(raw)
+    return Array.isArray(parsed) ? parsed : []
+  } catch {
+    return []
+  }
+}
 
 export default function App() {
-  const [todos, setTodos] = useState([
-    { id: 1, text: 'Read a book', done: false },
-    { id: 2, text: 'Go for a walk', done: true },
-    { id: 3, text: 'Write some code', done: false },
-  ])
+  const [todos, setTodos] = useState(loadTodos)
   const [input, setInput] = useState('')
   const [filter, setFilter] = useState('all')
+
+  useEffect(() => {
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(todos))
+    } catch {
+      // storage full or unavailable — ignore
+    }
+  }, [todos])
 
   const addTodo = () => {
     const text = input.trim()
